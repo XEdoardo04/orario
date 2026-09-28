@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Orario Lezioni</title>
+  <style>
+    body { font-family: system-ui, -apple-system, sans-serif; margin: 1.5rem; background: #f8fafc; color: #0f172a; max-width: 800px; margin-inline: auto; }
+    h1 { color: #1e293b; border-bottom: 2px solid #e2e8f0; padding-bottom: 0.5rem; }
+    .card { background: white; padding: 1rem 1.25rem; border-radius: 8px; margin-bottom: 0.75rem; border: 1px solid #e2e8f0; box-shadow: 0 1px 3px rgba(0,0,0,0.05); }
+    .riga { margin-bottom: 0.25rem; font-size: 0.95rem; }
+    .timestamp { font-size: 0.85rem; color: #475569; margin-bottom: 1.5rem; background: #e2e8f0; padding: 0.4rem 0.8rem; border-radius: 6px; display: inline-block; }
+  </style>
+</head>
+<body>
+
+  <h1>Orario Lezioni - Medicina</h1>
+  <div class="timestamp" id="last-updated">Caricamento in corso...</div>
+
+  <div id="events-container"></div>
+
+  <script>
+    async function loadSchedule() {
+      try {
+        const response = await fetch('./schedule.json?t=' + Date.now());
+        if (!response.ok) throw new Error('File schedule.json non ancora generato');
+        const data = await response.json();
+
+        document.getElementById('last-updated').innerText = `Ultimo aggiornamento: ${data.last_updated}`;
+
+        const container = document.getElementById('events-container');
+        if (!data.events || data.events.length === 0) {
+          container.innerHTML = '<p>Nessun orario trovato nel file.</p>';
+          return;
+        }
+
+        container.innerHTML = data.events.map(event => `
+          <div class="card">
+            ${event.dati_riga.map(col => `<div class="riga">${col}</div>`).join('')}
+          </div>
+        `).join('');
+      } catch (err) {
+        document.getElementById('events-container').innerHTML = `<p style="color:#dc2626;">File orario non ancora disponibile. Avvia la prima esecuzione da GitHub Actions.</p>`;
+      }
+    }
+
+    loadSchedule();
+  </script>
+</body>
+</html>
