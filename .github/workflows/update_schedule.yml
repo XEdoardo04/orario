@@ -15,6 +15,8 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Configura Python
         uses: actions/setup-python@v5
@@ -29,14 +31,15 @@ jobs:
       - name: Esegui Scraper
         run: python scraper.py
 
-      - name: Commit e Push delle modifiche
+      - name: Verifica e Commit schedule.json
         run: |
-          git config --local user.email "action@github.com"
-          git config --local user.name "GitHub Action Bot"
+          git config --local user.email "github-actions[bot]@users.noreply.github.com"
+          git config --local user.name "github-actions[bot]"
           git add schedule.json
-          if [ -n "$(git status --porcelain)" ]; then
+          if git status --porcelain | grep -q 'schedule.json'; then
             git commit -m "Auto-update orario lezioni"
             git push
+            echo "File schedule.json aggiornato e pubblicato con successo!"
           else
-            echo "Nessun cambiamento rilevato."
+            echo "Nessuna variazione trovata nel file schedule.json."
           fi
