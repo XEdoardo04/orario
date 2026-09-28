@@ -4,7 +4,7 @@ on:
   schedule:
     # Esegue ogni giorno alle 05:00 UTC (07:00 italiane)
     - cron: '0 5 * * *'
-  workflow_dispatch: # Permette di avviare l'aggiornamento manualmente con un click
+  workflow_dispatch:
 
 jobs:
   build-and-update:
@@ -34,4 +34,9 @@ jobs:
           git config --local user.email "action@github.com"
           git config --local user.name "GitHub Action Bot"
           git add schedule.json
-          git diff-index --quiet HEAD || (git commit -m "Auto-update orario lezioni [skip ci]" && git push)
+          if [ -n "$(git status --porcelain)" ]; then
+            git commit -m "Auto-update orario lezioni"
+            git push
+          else
+            echo "Nessun cambiamento rilevato."
+          fi
