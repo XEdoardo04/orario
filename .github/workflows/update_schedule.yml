@@ -2,21 +2,19 @@ name: Aggiorna Orario Lezioni
 
 on:
   schedule:
-    # Esegue ogni giorno alle 05:00 UTC (07:00 italiane)
     - cron: '0 5 * * *'
   workflow_dispatch:
+
+permissions:
+  contents: write
 
 jobs:
   build-and-update:
     runs-on: ubuntu-latest
-    permissions:
-      contents: write
 
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
-        with:
-          token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Configura Python
         uses: actions/setup-python@v5
@@ -31,15 +29,8 @@ jobs:
       - name: Esegui Scraper
         run: python scraper.py
 
-      - name: Verifica e Commit schedule.json
-        run: |
-          git config --local user.email "github-actions[bot]@users.noreply.github.com"
-          git config --local user.name "github-actions[bot]"
-          git add schedule.json
-          if git status --porcelain | grep -q 'schedule.json'; then
-            git commit -m "Auto-update orario lezioni"
-            git push
-            echo "File schedule.json aggiornato e pubblicato con successo!"
-          else
-            echo "Nessuna variazione trovata nel file schedule.json."
-          fi
+      - name: Commit e Push automatico di schedule.json
+        uses: stefanzweifel/git-auto-commit-action@v5
+        with:
+          commit_message: "Auto-update schedule.json"
+          file_pattern: "schedule.json"
